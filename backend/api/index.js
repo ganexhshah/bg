@@ -3,15 +3,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
-
-// Import routes
-const authRoutes = require('../routes/auth');
-const storyRoutes = require('../routes/stories');
-const profileRoutes = require('../routes/profile');
-const galleryRoutes = require('../routes/gallery');
-const settingsRoutes = require('../routes/settings');
-const analyticsRoutes = require('../routes/analytics');
 
 const app = express();
 
@@ -41,38 +32,82 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Connect to MongoDB (only if not already connected)
-if (mongoose.connection.readyState === 0) {
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
+// MongoDB connection with better error handling
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is not set');
+    }
+
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+    });
+
+    isConnected = true;
     console.log('✅ Connected to MongoDB');
+
     // Initialize admin user
-    require('../utils/initAdmin')();
-  })
-  .catch((error) => {
+    try {
+      require('../utils/initAdmin')();
+    } catch (error) {
+      console.log('Admin initialization skipped:', error.message);
+    }
+  } catch (error) {
     console.error('❌ MongoDB connection error:', error);
-  });
+    throw error;
+  }
+};
+
+// Import routes with error handling
+let authRoutes, storyRoutes, profileRoutes, galleryRoutes, settingsRoutes, analyticsRoutes;
+
+try {
+  authRoutes = require('../routes/auth');
+  storyRoutes = require('../routes/stories');
+  profileRoutes = require('../routes/profile');
+  galleryRoutes = require('../routes/gallery');
+  settingsRoutes = require('../routes/settings');
+  analyticsRoutes = require('../routes/analytics');
+} catch (error) {
+  console.error('Error loading routes:', error);
 }
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/stories', storyRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/gallery', galleryRoutes);
-app.use('/api/settings', settingsRoutes);
-app.use('/api/analytics', analyticsRoutes);
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (storyRoutes) app.use('/api/stories', storyRoutes);
+if (profileRoutes) app.use('/api/profile', profileRoutes);
+if (galleryRoutes) app.use('/api/gallery', galleryRoutes);
+if (settingsRoutes) app.use('/api/settings', settingsRoutes);
+if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    message: 'API is running on Vercel',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    await connectToDatabase();
+    res.json({
+      status: 'OK',
+      message: 'API is running on Vercel',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV,
+      mongodb: isConnected ? 'Connected' : 'Disconnected'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Database connection failed',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Root endpoint
@@ -89,6 +124,20 @@ app.get('/', (req, res) => {
       '/api/health'
     ]
   });
+});
+
+// Connect to database before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
 });
 
 // 404 handler
