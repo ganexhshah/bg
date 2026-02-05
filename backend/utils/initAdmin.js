@@ -12,15 +12,15 @@ const initializeAdmin = async () => {
     if (!adminExists) {
       // Create admin user
       const adminUser = new User({
-        email: process.env.ADMIN_EMAIL || 'admin@sonikakarki.com',
-        password: process.env.ADMIN_PASSWORD || 'admin123',
+        email: process.env.ADMIN_EMAIL || 'hello.ganeshshah@gmail.com',
+        password: process.env.ADMIN_PASSWORD || 'anukarki',
         role: 'admin'
       });
       
       await adminUser.save();
       console.log('✅ Admin user created successfully');
       console.log(`📧 Email: ${adminUser.email}`);
-      console.log(`🔑 Password: ${process.env.ADMIN_PASSWORD || 'admin123'}`);
+      console.log(`🔑 Password: ${process.env.ADMIN_PASSWORD || 'anukarki'}`);
     } else {
       console.log('✅ Admin user already exists');
     }

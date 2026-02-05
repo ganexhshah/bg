@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+// JWT Secret with fallback
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-jwt-key-minimum-32-characters-long-for-security-purposes';
+
 // Middleware to verify JWT token
 const auth = async (req, res, next) => {
   try {
@@ -13,7 +16,7 @@ const auth = async (req, res, next) => {
       });
     }
     
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
     
     if (!user || !user.isActive) {
@@ -79,7 +82,7 @@ const optionalAuth = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       const user = await User.findById(decoded.id).select('-password');
       
       if (user && user.isActive) {

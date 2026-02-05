@@ -97,13 +97,16 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.methods.generateAuthToken = function() {
   const jwt = require('jsonwebtoken');
   
+  // Use environment variable or fallback secret
+  const jwtSecret = process.env.JWT_SECRET || 'super-secret-jwt-key-minimum-32-characters-long-for-security-purposes';
+  
   return jwt.sign(
     { 
       id: this._id, 
       email: this.email, 
       role: this.role 
     },
-    process.env.JWT_SECRET,
+    jwtSecret,
     { 
       expiresIn: process.env.JWT_EXPIRE || '7d' 
     }
