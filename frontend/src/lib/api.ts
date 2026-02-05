@@ -1,6 +1,6 @@
 import { cache, CACHE_KEYS, CACHE_TTL } from './cache'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_BASE_URL = '/api';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
