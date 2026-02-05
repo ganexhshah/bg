@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.BACKEND_API_URL || 'http://localhost:5000/api';
 
 async function handleRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
