@@ -50,12 +50,18 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ Backend Error: ${response.status} - ${errorText}`);
+      console.error(`❌ Request URL: ${finalUrl}`);
+      console.error(`❌ Request Method: ${request.method}`);
+      console.error(`❌ Request Body: ${body ? JSON.stringify(body).substring(0, 200) : 'No body'}`);
+      
       return NextResponse.json(
         { 
           success: false, 
           message: `Backend error: ${response.status}`,
           details: errorText,
-          url: finalUrl
+          url: finalUrl,
+          method: request.method,
+          timestamp: new Date().toISOString()
         },
         { status: response.status }
       );
