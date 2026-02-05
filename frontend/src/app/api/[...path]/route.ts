@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.BACKEND_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.BACKEND_API_URL || 'https://backend-kappa-three-25.vercel.app/api';
 
 async function handleRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const resolvedParams = await params;
     const path = resolvedParams?.path?.join('/') || '';
     const url = `${API_BASE_URL}/${path}`;
+    
+    console.log(`🔄 API Proxy: ${request.method} ${url}`);
+    console.log(`🔧 Backend URL: ${API_BASE_URL}`);
     
     // Get the request body if it exists
     let body = null;
@@ -34,22 +37,32 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
     const queryString = searchParams.toString();
     const finalUrl = queryString ? `${url}?${queryString}` : url;
 
+    console.log(`📡 Final URL: ${finalUrl}`);
+
     const response = await fetch(finalUrl, {
       method: request.method,
       headers,
       body,
     });
 
-    // Log the response for debugging
-    console.log(`API Request: ${request.method} ${finalUrl}`);
-    console.log(`Response Status: ${response.status}`);
+    console.log(`📊 Response Status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Backend Error: ${response.status} - ${errorText}`);
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Backend error: ${response.status}`,
+          details: errorText,
+          url: finalUrl
+        },
+        { status: response.status }
+      );
+    }
 
     const responseData = await response.json();
-    
-    // Log response data for debugging
-    if (!response.ok) {
-      console.error('API Error Response:', responseData);
-    }
+    console.log(`✅ Success: ${JSON.stringify(responseData).substring(0, 100)}...`);
 
     return NextResponse.json(responseData, { 
       status: response.status,
@@ -60,9 +73,14 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
       }
     });
   } catch (error) {
-    console.error('API proxy error:', error);
+    console.error('❌ API proxy error:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { 
+        success: false, 
+        message: 'API proxy error',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        backendUrl: API_BASE_URL
+      },
       { status: 500 }
     );
   }
