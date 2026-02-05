@@ -11,6 +11,7 @@ import { storiesAPI } from "@/lib/api"
 
 interface Story {
   _id: string
+  slug?: string
   title: string
   category: string
   status: string

@@ -33,7 +33,7 @@ export default function EditStoryPage() {
 
   const loadStory = () => {
     // Mock data - in real app, fetch from API
-    const mockStories = {
+    const mockStories: Record<string, any> = {
       "1": {
         title: "My First Modeling Experience",
         category: "personal",

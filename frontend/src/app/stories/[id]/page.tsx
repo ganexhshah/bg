@@ -194,7 +194,7 @@ export default function ViewStoryPage() {
       }
     } catch (error) {
       console.error("Error liking story:", error)
-      alert(`Failed to ${isLiked ? 'unlike' : 'like'} story: ${error.message}`)
+      alert(`Failed to ${isLiked ? 'unlike' : 'like'} story: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

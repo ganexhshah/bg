@@ -122,7 +122,7 @@ export default function ProfileManagement() {
         }
       } catch (error) {
         console.error("Error uploading image:", error)
-        setError(`Failed to upload image: ${error.message}`)
+        setError(`Failed to upload image: ${error instanceof Error ? error.message : 'Unknown error'}`)
         
         // Fallback to local preview
         const reader = new FileReader()

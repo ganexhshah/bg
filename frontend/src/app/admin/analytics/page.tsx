@@ -65,7 +65,7 @@ interface Visitor {
 
 interface Comment {
   _id: string
-  storyId: { title: string; slug?: string }
+  storyId: { title: string; slug?: string; _id: string }
   user: { name: string; email?: string }
   text: string
   isApproved: boolean
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
         setComments([
           {
             _id: "1",
-            storyId: { title: "My First Story", slug: "my-first-story" },
+            storyId: { title: "My First Story", slug: "my-first-story", _id: "story1" },
             user: { name: "John Doe", email: "john@example.com" },
             text: "Great story! Really enjoyed reading it.",
             isApproved: false,
