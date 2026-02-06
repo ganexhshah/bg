@@ -27,7 +27,7 @@ The backend needs these environment variables in Vercel to work properly:
 
 ### Backend Project Environment Variables:
 ```
-MONGODB_URI = mongodb+srv://anukarki:3k7GpwHppDs8IU7v@cluster0.6j922hj.mongodb.net/blog?retryWrites=true&w=majority
+MONGODB_URI = mongodb+srv://anukarki:3k7GpwHppDs8IU7v@cluster0.6j922hj.mongodb.net/blog?retryWrites=true&w=majority&appName=Cluster0
 JWT_SECRET = super-secret-jwt-key-minimum-32-characters-long-for-security-purposes
 NODE_ENV = production
 FRONTEND_URL = https://www.anukarki.xyz
