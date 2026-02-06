@@ -123,6 +123,7 @@ app.get('/', (req, res) => {
       '/api/gallery',
       '/api/settings',
       '/api/analytics',
+      '/api/reset-password',
       '/api/health'
     ]
   });
