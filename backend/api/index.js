@@ -82,16 +82,21 @@ try {
   console.error('Error loading routes:', error);
 }
 
-// Routes
-if (authRoutes) app.use('/api/auth', authRoutes);
-if (storyRoutes) app.use('/api/stories', storyRoutes);
-if (profileRoutes) app.use('/api/profile', profileRoutes);
-if (galleryRoutes) app.use('/api/gallery', galleryRoutes);
-if (settingsRoutes) app.use('/api/settings', settingsRoutes);
-if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
-if (resetPasswordRoutes) app.use('/api/reset-password', resetPasswordRoutes);
+// Connect to database before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
+});
 
-// Health check endpoint
+// Health check endpoint (before other routes)
 app.get('/api/health', async (req, res) => {
   try {
     await connectToDatabase();
@@ -129,19 +134,14 @@ app.get('/', (req, res) => {
   });
 });
 
-// Connect to database before handling requests
-app.use(async (req, res, next) => {
-  try {
-    await connectToDatabase();
-    next();
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Database connection failed',
-      error: error.message
-    });
-  }
-});
+// API Routes
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (storyRoutes) app.use('/api/stories', storyRoutes);
+if (profileRoutes) app.use('/api/profile', profileRoutes);
+if (galleryRoutes) app.use('/api/gallery', galleryRoutes);
+if (settingsRoutes) app.use('/api/settings', settingsRoutes);
+if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
+if (resetPasswordRoutes) app.use('/api/reset-password', resetPasswordRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
