@@ -47,29 +47,20 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
 
     console.log(`📊 Response Status: ${response.status}`);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ Backend Error: ${response.status} - ${errorText}`);
-      console.error(`❌ Request URL: ${finalUrl}`);
-      console.error(`❌ Request Method: ${request.method}`);
-      console.error(`❌ Request Body: ${body ? JSON.stringify(body).substring(0, 200) : 'No body'}`);
-      
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: `Backend error: ${response.status}`,
-          details: errorText,
-          url: finalUrl,
-          method: request.method,
-          timestamp: new Date().toISOString()
-        },
-        { status: response.status }
-      );
+    // Get response data (works for both success and error)
+    const contentType = response.headers.get('content-type');
+    let responseData;
+    
+    if (contentType?.includes('application/json')) {
+      responseData = await response.json();
+    } else {
+      const text = await response.text();
+      responseData = { success: false, message: text };
     }
 
-    const responseData = await response.json();
-    console.log(`✅ Success: ${JSON.stringify(responseData).substring(0, 100)}...`);
+    console.log(`📦 Response Data: ${JSON.stringify(responseData).substring(0, 200)}...`);
 
+    // Return the response with the same status code
     return NextResponse.json(responseData, { 
       status: response.status,
       headers: {
