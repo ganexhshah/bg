@@ -68,7 +68,7 @@ const connectToDatabase = async () => {
 };
 
 // Import routes with error handling
-let authRoutes, storyRoutes, profileRoutes, galleryRoutes, settingsRoutes, analyticsRoutes;
+let authRoutes, storyRoutes, profileRoutes, galleryRoutes, settingsRoutes, analyticsRoutes, resetPasswordRoutes;
 
 try {
   authRoutes = require('../routes/auth');
@@ -77,6 +77,7 @@ try {
   galleryRoutes = require('../routes/gallery');
   settingsRoutes = require('../routes/settings');
   analyticsRoutes = require('../routes/analytics');
+  resetPasswordRoutes = require('../routes/reset-password');
 } catch (error) {
   console.error('Error loading routes:', error);
 }
@@ -88,6 +89,7 @@ if (profileRoutes) app.use('/api/profile', profileRoutes);
 if (galleryRoutes) app.use('/api/gallery', galleryRoutes);
 if (settingsRoutes) app.use('/api/settings', settingsRoutes);
 if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
+if (resetPasswordRoutes) app.use('/api/reset-password', resetPasswordRoutes);
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
